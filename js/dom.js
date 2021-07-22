@@ -17,7 +17,7 @@ function makeBook(inputBookTitle, inputBookAuthor, inputBookYear){
 
     const container = document.createElement("div");
     container.classList.add("item", "shadow");
-    container.append(textContainer);
+    return container.appendChild(textContainer);
 }
 
 function addBook(){
