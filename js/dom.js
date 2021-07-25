@@ -1,103 +1,138 @@
-const INCOMPLETE_BOOK = "incompleteBookshelfList";
 const COMPLETE_BOOK = "completeBookshelfList";
+const UNCOMPLETE_BOOK = "incompleteBookshelfList";
+const BOOK_ID = "bookId";
 
-function makeBook(inputBookId, inputBookTitle, inputBookAuthor, inputBookYear, inputBookIsComplete){
+function makeBook(title, author, year, isCompleted){
+    const bookTitle = document.createElement("h2");
+    bookTitle.innerText = title;
 
-    const completeBookTitle = document.createElement("h2");
-    completeBookTitle.innerText = inputBookTitle;
+    const bookAuthor = document.createElement("p");
+    bookAuthor.classList.add("author");
+    bookAuthor.innerText = "Penulis : " + author;
 
-    const completeBookAuthor = document.createElement("p");
-    completeBookAuthor.innerText = inputBookAuthor;
+    const bookYear = document.createElement("p");
+    bookYear.classList.add("year");
+    bookYear.innerText = "Tahun : " + year;
 
-    const completeBookYear = document.createElement("p");
-    completeBookYear.innerText = inputBookYear;
-	
-	const completeBookIsComplete = document.createElement("p");
-    completeBookIsComplete.innerText = inputBookIsComplete;
+    const btnSection = document.createElement("div");
+    btnSection.classList.add("action");
 
-    const btnContainer = document.createElement("div");
-    btnContainer.classList.add("action");
+    const section = document.createElement("article");
+    section.classList.add("book_item");
+    section.append(bookTitle, bookAuthor, bookYear);
 
-    const container = document.createElement("article");
-    container.classList.add("book_item");
-    container.append(completeBookTitle, completeBookAuthor, completeBookYear, completeBookIsComplete);
-    
-    if (inputBookIsComplete === false ){
-        btnContainer.append(incompletedButton);
-    } else{
-        btnContainer.append(completedButton);
+    if(isCompleted){
+        btnSection.append(unfinishedBtn(), deleteBtn());
+    }else{
+        btnSection.append(finishedBtn(), deleteBtn());
     }
-    
-    container.append(btnContainer);
-    return container;
-	
+
+    section.append(btnSection);
+    return section;
 }
 
-function addBook(){
-    const inputBookId = +new Date();
-    const inputBookTitle = document.getElementById("inputBookTitle").value;
-    const inputBookAuthor = document.getElementById("inputBookAuthor").value;
-    const inputBookYear = document.getElementById("inputBookYear").value;
-    let inputBookIsComplete = document.getElementById("inputBookIsComplete").checked;
-
-    if(inputBookIsComplete === false){
-        const incompleteBook = document.getElementById(INCOMPLETE_BOOK);
-        const completeFalse = makeBook(inputBookId,inputBookTitle, inputBookAuthor, inputBookYear, inputBookIsComplete);
-        incompleteBook.append(completeFalse);
-    }
-    else{
-        const completeBook = document.getElementById(COMPLETE_BOOK);
-        const completeTrue = makeBook(inputBookId,inputBookTitle, inputBookAuthor, inputBookYear, inputBookIsComplete);
-        completeBook.append(completeTrue);
-        }
-    
+function unfinishedBtn(){
+    return createBtn("btn_unfinished", "Belum Selesai Di Baca", "green", function(e){
+        unfinishedBook(e.target.parentElement.parentElement)
+    })
 }
 
-function createButton(buttonTypeClass, text, color, eventListener) {
+function finishedBtn(){
+    return createBtn("btn_finished", "Selesai Di Baca", "green", function(e){
+        finishedBook(e.target.parentElement.parentElement)
+    })
+}
+
+function deleteBtn(){
+    return createBtn("btn_delete", "Hapus Buku", "red", function(e){
+        deleteBook(e.target.parentElement.parentElement)
+    })
+}
+
+function createBtn(btnclass, text, color, eventListener){
     const button = document.createElement("button");
     button.innerText = text;
-    button.classList = buttonTypeClass;
+    button.classList = btnclass;
     button.classList = color;
-    button.addEventListener("click", function (event) {
-        eventListener(event);
+    button.addEventListener("click", function(e){
+        eventListener(e);
     });
     return button;
 }
 
-function completedButton(){
-    return createButton("btn_completed", "Selesai Dibaca", "green", function(event){
-        completedBook(event.target.parentElement.parentElement.parentElement)
-    })
+function storeBook(){
+    const uncompletedBook = document.getElementById(UNCOMPLETE_BOOK);
+    const completedBook = document.getElementById(COMPLETE_BOOK);
+
+    const bookTitle = document.getElementById("inputBookTitle").value;
+    const bookAuthor = document.getElementById("inputBookAuthor").value;
+    const bookYear = document.getElementById("inputBookYear").value;
+    let isCompleted = document.getElementById("inputBookIsComplete");
+
+    if (isCompleted.checked) {
+        isCompleted = true;
+    } else {
+        isCompleted = false;
+    }
+
+    const newBook = makeBook(bookTitle, bookAuthor, bookYear, isCompleted);
+    const bookObject = composeBookObject(bookTitle, bookAuthor, bookYear, isCompleted);
+
+    newBook[BOOK_ID] = bookObject.id;
+    books.push(bookObject);
+
+    if(isCompleted){
+        completedBook.append(newBook);
+    } else {
+        uncompletedBook.append(newBook);
+    }
+
+    updateBook();
 }
 
-function incompletedButton(){
-    return createButton("btn_uncompleted", "Belum Selesai Dibaca", "green", function(event){
-        incompletedBook(event.target.parentElement.parentElement.parentElement)
-    })
+function finishedBook(bookElement){
+    const bookCompleted = document.getElementById(COMPLETE_BOOK);
+
+    const bookTitle = bookElement.querySelector(".book_item > h2").innerText;
+    const bookAuthor = bookElement.querySelector(".author").innerText.replace("Penulis : ","");
+    const bookYear = bookElement.querySelector(".year").innerText.replace("Tahun : ", "");
+
+    const newBook = makeBook(bookTitle, bookAuthor, bookYear, true)
+    const book = findBook(bookElement[BOOK_ID])
+    book.isCompleted = true;
+    newBook[BOOK_ID] = book.id;
+
+    bookCompleted.append(newBook);
+    bookElement.remove();
+
+    updateBook();
 }
 
-function incompletedBook(bookElement){
-    const bookUncompleted = document.getElementById(incompleteBookshelfList);
+function unfinishedBook(bookElement){
+    const bookUncompleted = document.getElementById(UNCOMPLETE_BOOK);
 
-    const inputBookTitle = bookElement.querySelector(".book_item > h2").innerText;
-    const inputBookAuthor = bookElement.querySelector(".author").innerText.replace("Penulis : ","");
-    const inputBookYear = bookElement.querySelector(".year").innerText.replace("Tahun : ", "");
+    const bookTitle = bookElement.querySelector(".book_item > h2").innerText;
+    const bookAuthor = bookElement.querySelector(".author").innerText.replace("Penulis : ","");
+    const bookYear = bookElement.querySelector(".year").innerText.replace("Tahun : ", "");
 
-    const newBook = makeBook(inputBookTitle, inputBookAuthor, inputBookYear, false);
+    const newBook = makeBook(bookTitle, bookAuthor, bookYear, false);
+    
+    const book = findBook(bookElement[BOOK_ID]);
+    book.isCompleted = false;
+    newBook[BOOK_ID] = book.id;
 
     bookUncompleted.append(newBook);
     bookElement.remove();
+
+    updateBook();
 }
 
-function incompletedBook(bookElement){
-    const bookUncompleted = document.getElementById(completeBookshelfList);
+function deleteBook(bookElement){
+    if (confirm("Apakah anda yakin akan menghapus data ?")) {
+        const bookPosition = findbookIndex(bookElement[BOOK_ID]);
+        books.splice(bookPosition, 1);
 
-    const inputBookTitle = bookElement.querySelector(".book_item > h2").innerText;
-    const inputBookAuthor = bookElement.querySelector(".author").innerText.replace("Penulis : ","");
-    const inputBookYear = bookElement.querySelector(".year").innerText.replace("Tahun : ", "");
-
-    const newBook = makeBook(inputBookTitle, inputBookAuthor, inputBookYear, true);
-
-    bookUncompleted.append(newBook);
-    bookElement.remove();
+        bookElement.remove();
+        updateBook();
+    }
 }

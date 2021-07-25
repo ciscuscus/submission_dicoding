@@ -1,8 +1,20 @@
-document.addEventListener("DOMContentLoaded", function(){
-    const formInput = document.getElementById("inputBook");
+document.addEventListener('DOMContentLoaded', function(){
+    const formBook = document.getElementById('inputBook');
 
-    formInput.addEventListener("submit", function(event) {
-        event.preventDefault();
-        addBook();
-    });
+    formBook.addEventListener('submit', function(e){
+        e.preventDefault();
+        storeBook();
+    })
+
+    if(isStorageExist){
+        loadDataFromStorage();
+    }
+});
+
+document.addEventListener('ondatasaved', function(){
+    alert('Buku Berhasil Disimpan!');
+});
+
+document.addEventListener('ondataloaded', function(){
+    refreshDataFromBooks();
 })

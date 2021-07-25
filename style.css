@@ -170,3 +170,7 @@ main {
     background-color: darkred;
     color: white;
 }
+
+.title {
+    text-decoration: underline;
+}
